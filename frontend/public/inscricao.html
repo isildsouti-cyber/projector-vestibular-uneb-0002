@@ -978,41 +978,171 @@ Estou ciente de que prestar informações falsas acarreta minha eliminação do 
       }
     });
   }
-  function setupValidation(){
-    var form = document.getElementById('frm-style-list');
-    var btn = document.getElementById('btn-salvar');
-    if(!form || !btn) return;
-    function filled(el){
-      if(!el) return false;
-      if(el.type === 'checkbox') return el.checked;
-      if(el.type === 'file') return el.files && el.files.length > 0;
-      return (el.value || '').trim() !== '';
-    }
-    function validate(){
-      var ok = true;
-      var reqs = form.querySelectorAll('[required]');
-      for(var i=0;i<reqs.length;i++){ if(!filled(reqs[i])){ ok = false; break; } }
-      if(ok){
-        var tipo = document.getElementById('DOC_TIPO');
-        if(tipo && tipo.value){
-          if(!filled(document.getElementById('DOC_FRENTE'))) ok = false;
-          if(!filled(document.getElementById('DOC_VERSO'))) ok = false;
-        }
-      }
-      if(ok){
-        var s = document.getElementById('SENHA');
-        var cs = document.getElementById('CONFIRMA_SENHA');
-        if(s && cs && s.value !== cs.value) ok = false;
-      }
-      btn.disabled = !ok;
-      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
-      btn.style.opacity = ok ? '1' : '0.6';
-    }
-    form.addEventListener('input', validate);
-    form.addEventListener('change', validate);
-    validate();
+  // ---------- Máscaras & validações ----------
+  function maskCPF(v){
+    v = v.replace(/\D/g,'').slice(0,11);
+    if(v.length>9) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2}).*/,'$1.$2.$3-$4');
+    if(v.length>6) return v.replace(/(\d{3})(\d{3})(\d{1,3}).*/,'$1.$2.$3');
+    if(v.length>3) return v.replace(/(\d{3})(\d{1,3}).*/,'$1.$2');
+    return v;
   }
-  function init(){ bind('DOC_FRENTE'); bind('DOC_VERSO'); setupValidation(); }
+  function validCPF(str){
+    var cpf = String(str||'').replace(/\D/g,''), i;
+    if(cpf.length !== 11) return false;
+    if(/^(\d)\1{10}$/.test(cpf)) return false;
+    var s=0;
+    for(i=0;i<9;i++) s += parseInt(cpf[i])*(10-i);
+    var d1=(s*10)%11; if(d1===10) d1=0;
+    if(d1 !== parseInt(cpf[9])) return false;
+    s=0;
+    for(i=0;i<10;i++) s += parseInt(cpf[i])*(11-i);
+    var d2=(s*10)%11; if(d2===10) d2=0;
+    return d2 === parseInt(cpf[10]);
+  }
+  function maskData(v){
+    v = v.replace(/\D/g,'').slice(0,8);
+    if(v.length>4) return v.replace(/(\d{2})(\d{2})(\d{1,4}).*/,'$1/$2/$3');
+    if(v.length>2) return v.replace(/(\d{2})(\d{1,2}).*/,'$1/$2');
+    return v;
+  }
+  function validData(str){
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(str||''));
+    if(!m) return false;
+    var d=+m[1], mo=+m[2], y=+m[3];
+    if(mo<1||mo>12) return false;
+    if(d<1||d>31) return false;
+    if(y<1900 || y>2100) return false;
+    var dt = new Date(y, mo-1, d);
+    return dt.getFullYear()===y && dt.getMonth()===mo-1 && dt.getDate()===d;
+  }
+  function maskCel(v){
+    v = v.replace(/\D/g,'').slice(0,11);
+    if(v.length>10) return v.replace(/(\d{2})(\d{5})(\d{1,4}).*/,'($1) $2-$3');
+    if(v.length>6)  return v.replace(/(\d{2})(\d{4})(\d{1,4}).*/,'($1) $2-$3');
+    if(v.length>2)  return v.replace(/(\d{2})(\d{1,5}).*/,'($1) $2');
+    if(v.length>0)  return '(' + v;
+    return v;
+  }
+  function validCel(str){ return String(str||'').replace(/\D/g,'').length===11; }
+  function maskCEP(v){
+    v = v.replace(/\D/g,'').slice(0,8);
+    if(v.length>5) return v.replace(/(\d{5})(\d{1,3}).*/,'$1-$2');
+    return v;
+  }
+  function fetchCEP(cep){
+    var status = document.getElementById('CEP_STATUS');
+    var end = document.getElementById('LOGRADOURO');
+    var bai = document.getElementById('BAIRRO');
+    var cid = document.getElementById('CIDADE');
+    var uf  = document.getElementById('UF');
+    if(!/^\d{5}-?\d{3}$/.test(cep)){ if(status) status.textContent=''; return; }
+    if(status){ status.style.color='#555'; status.textContent='Buscando CEP...'; }
+    var clean = cep.replace(/\D/g,'');
+    fetch('/api/cep/'+clean, { headers: { 'Accept': 'application/json' } })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && !d.erro){
+          if(end) end.value = String(d.logradouro||'').toUpperCase();
+          if(bai) bai.value = String(d.bairro||'').toUpperCase();
+          if(cid) cid.value = String(d.localidade||'').toUpperCase();
+          if(uf)  uf.value  = String(d.uf||'').toUpperCase();
+          if(status){ status.style.color='#2e7d32'; status.textContent='Endereço encontrado'; setTimeout(function(){ if(status.textContent==='Endereço encontrado') status.textContent=''; }, 2500); }
+          var numero = document.getElementById('NUMERO'); if(numero) numero.focus();
+        } else {
+          if(status){ status.style.color='#c62828'; status.textContent='CEP não encontrado — preencha manualmente'; }
+          if(end) end.value=''; if(bai) bai.value=''; if(cid) cid.value=''; if(uf) uf.value='';
+        }
+        validateForm();
+      })
+      .catch(function(){ if(status){ status.style.color='#c62828'; status.textContent='Erro ao buscar CEP'; } });
+  }
+  function toUpper(el){
+    if(!el) return;
+    var start=el.selectionStart, endp=el.selectionEnd;
+    var v=String(el.value||'').toUpperCase();
+    if(el.value!==v){ el.value=v; try{ el.setSelectionRange(start,endp); }catch(e){} }
+  }
+  function validateForm(){
+    var form = document.getElementById('frm-style-list');
+    var btn  = document.getElementById('btn-salvar');
+    if(!form || !btn) return;
+    var ok = true;
+    var els = form.querySelectorAll('input,select,textarea');
+    for(var i=0;i<els.length;i++){
+      var el = els[i];
+      if(!el.required) continue;
+      if(el.type==='checkbox'){ if(!el.checked) ok=false; continue; }
+      if(el.type==='file'){
+        if(el.offsetParent===null) continue;
+        if(!el.files || el.files.length===0) ok=false;
+        continue;
+      }
+      var v = String(el.value||'').trim();
+      if(!v){ ok=false; continue; }
+      if(el.id==='CPF' && !validCPF(v)) ok=false;
+      if(el.id==='DATA_NASCIMENTO' && !validData(v)) ok=false;
+      if(el.id==='CELULAR' && !validCel(v)) ok=false;
+      if(el.id==='EMAIL' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) ok=false;
+      if(el.id==='CEP' && !/^\d{5}-?\d{3}$/.test(v)) ok=false;
+    }
+    // Documento: se tipo selecionado, exigir frente e verso
+    var tipo = document.getElementById('DOC_TIPO');
+    if(tipo && tipo.value){
+      var fr=document.getElementById('DOC_FRENTE'), vs=document.getElementById('DOC_VERSO');
+      if(!fr || !fr.files || fr.files.length===0) ok=false;
+      if(!vs || !vs.files || vs.files.length===0) ok=false;
+    }
+    // Senha === Confirmar senha
+    var s=document.getElementById('SENHA'), cs=document.getElementById('CONFIRMA_SENHA'), serr=document.getElementById('SENHA_ERR');
+    if(s && cs){
+      if(cs.value && s.value !== cs.value){ ok=false; if(serr) serr.style.display='block'; }
+      else if(serr){ serr.style.display='none'; }
+    }
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.6';
+    btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+  }
+  function init(){
+    bind('DOC_FRENTE'); bind('DOC_VERSO');
+    var form = document.getElementById('frm-style-list');
+    if(!form) return;
+    form.querySelectorAll('input,textarea,select').forEach(function(el){
+      if(el.classList && el.classList.contains('upcase')){
+        el.addEventListener('input', function(){ toUpper(el); });
+      }
+      el.addEventListener('input', validateForm);
+      el.addEventListener('change', validateForm);
+    });
+    var cpf=document.getElementById('CPF'), cpfErr=document.getElementById('CPF_ERR');
+    if(cpf){
+      cpf.addEventListener('input', function(){ cpf.value=maskCPF(cpf.value); });
+      cpf.addEventListener('blur', function(){
+        var v=cpf.value.replace(/\D/g,'');
+        if(cpfErr){ if(v.length===0) cpfErr.style.display='none'; else cpfErr.style.display = validCPF(cpf.value)?'none':'inline'; }
+        validateForm();
+      });
+    }
+    var data=document.getElementById('DATA_NASCIMENTO');
+    if(data) data.addEventListener('input', function(){ data.value=maskData(data.value); });
+    var cel=document.getElementById('CELULAR');
+    if(cel) cel.addEventListener('input', function(){ cel.value=maskCel(cel.value); });
+    var cep=document.getElementById('CEP');
+    if(cep){
+      cep.addEventListener('input', function(){ cep.value=maskCEP(cep.value); });
+      cep.addEventListener('blur', function(){ if(/^\d{5}-?\d{3}$/.test(cep.value)) fetchCEP(cep.value); });
+    }
+    // Mostrar/ocultar senha
+    document.querySelectorAll('.__eye-toggle').forEach(function(tgl){
+      tgl.addEventListener('click', function(){
+        var inp = document.getElementById(tgl.getAttribute('data-target'));
+        if(!inp) return;
+        var open = tgl.querySelector('.__eye-open'), slash = tgl.querySelector('.__eye-slash');
+        if(inp.type==='password'){ inp.type='text'; if(open)open.style.display='none'; if(slash)slash.style.display='block'; }
+        else { inp.type='password'; if(open)open.style.display='block'; if(slash)slash.style.display='none'; }
+      });
+    });
+    validateForm();
+  }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
