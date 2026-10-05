@@ -956,6 +956,28 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
 }
 </style>
 <script>
+// Mostra/oculta o anexo de documento (frente/verso) conforme o tipo selecionado
+function __handleDocTipo(v){
+  var box = document.getElementById('doc-uploads');
+  var frente = document.getElementById('DOC_FRENTE');
+  var verso = document.getElementById('DOC_VERSO');
+  if(!box || !frente || !verso) return;
+  if(v){
+    box.style.display = 'block';
+    frente.required = true;
+    verso.required = true;
+  } else {
+    box.style.display = 'none';
+    frente.required = false;
+    verso.required = false;
+    try{ frente.value=''; verso.value=''; }catch(e){}
+    var fn = document.getElementById('DOC_FRENTE_name'); if(fn){ fn.textContent='Nenhum arquivo selecionado'; fn.classList.remove('has-file'); }
+    var vn = document.getElementById('DOC_VERSO_name'); if(vn){ vn.textContent='Nenhum arquivo selecionado'; vn.classList.remove('has-file'); }
+  }
+  if(typeof window.__revalidarInscricao === 'function') window.__revalidarInscricao();
+}
+</script>
+<script>
 (function(){
   function bind(id){
     var input = document.getElementById(id);
@@ -1098,6 +1120,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
   }
   function init(){
     bind('DOC_FRENTE'); bind('DOC_VERSO');
+    window.__revalidarInscricao = validateForm;
     var form = document.getElementById('frm-style-list');
     if(!form) return;
     form.querySelectorAll('input,textarea,select').forEach(function(el){
