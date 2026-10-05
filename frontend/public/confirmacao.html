@@ -45,7 +45,7 @@
  </div>
  <div class="menu-wrapper menu-mobile-clearfix" style=text-align:right>
  <div class=dadosCandidato>
- <p>Olá <b>ESTER GRACINE SANTOS</b></p>
+ <p>Olá <b id=hdr-nome>ESTER GRACINE SANTOS</b></p>
  </div>
  </div>
  <div class="menu-wrapper menu-mobile-clearfix" style=display:contents>
@@ -1738,6 +1738,7 @@
       if(!sp) return;
       sp.textContent=(val!==undefined && String(val).trim()!=='')?val:'—';
     }
+    var hn=document.getElementById('hdr-nome'); if(hn && d.NOME) hn.textContent=d.NOME;
     set('cnome', d.NOME);
     set('ccpf', d.CPF);
     set('cdata_nascimento', d.DATA_NASCIMENTO);
