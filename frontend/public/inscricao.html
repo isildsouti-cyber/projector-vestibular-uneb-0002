@@ -465,6 +465,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
 }
 #pgInformacoes .botao.maior.verde, #pgInformacoes a.botao.maior.verde, #pgInformacoes input#btn-salvar { background:#003a79 !important; color:#fff !important; border-color:#003a79 !important; }
 #pgInformacoes .botao.maior.verde:hover, #pgInformacoes a.botao.maior.verde:hover, #pgInformacoes input#btn-salvar:hover { background:#002a5c !important; border-color:#002a5c !important; }
+#pgInformacoes input#btn-salvar:disabled, #pgInformacoes input#btn-salvar:disabled:hover { background:#9aa4b0 !important; border-color:#9aa4b0 !important; cursor:not-allowed !important; opacity:0.7 !important; }
 #pgInformacoes .botao.maior.verde:hover { background:#002a5c !important; }
 #pgInformacoes .botao:not(.maior) { background:#fff !important; color:#002D4D !important; border:1.5px solid #002D4D !important; }
 #pgInformacoes .botao:not(.maior):hover { background:#002D4D !important; color:#fff !important; }
@@ -909,7 +910,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
 Estou ciente de que prestar informações falsas acarreta minha eliminação do certame e configura crime de falsidade ideológica (art. 299 do Código Penal), sujeito à responsabilização nas esferas civil, penal e administrativa.
 </label>
 </fieldset>
-<input class="button" data-testid="btn-continuar-inscricao" id="btn-salvar" name="salvar" style="opacity:1;cursor:pointer;" type="submit" value="Continuar"/>
+<input class="button" data-testid="btn-continuar-inscricao" disabled id="btn-salvar" name="salvar" style="opacity:0.6;cursor:not-allowed;" type="submit" value="Continuar"/>
 </form></div></div>
 </div>
 </div>
@@ -919,22 +920,10 @@ Estou ciente de que prestar informações falsas acarreta minha eliminação do 
  <div class=ProSeleta>
  <div class=Conteudo>
  
- <div class=info>
- <a href=/>Início</a>
- </div>
- 
  <div class=siteSeguro>
  <p>Site 100% Seguro</p>
  </div>
  
- </div>
- </div>
- 
- <div class=final>
- <div class=Conteudo style=display:flex;justify-content:center;text-align:center>
- <div class=links>
- © UNEB
- </div>
  </div>
  </div>
  
@@ -989,7 +978,41 @@ Estou ciente de que prestar informações falsas acarreta minha eliminação do 
       }
     });
   }
-  function init(){ bind('DOC_FRENTE'); bind('DOC_VERSO'); }
+  function setupValidation(){
+    var form = document.getElementById('frm-style-list');
+    var btn = document.getElementById('btn-salvar');
+    if(!form || !btn) return;
+    function filled(el){
+      if(!el) return false;
+      if(el.type === 'checkbox') return el.checked;
+      if(el.type === 'file') return el.files && el.files.length > 0;
+      return (el.value || '').trim() !== '';
+    }
+    function validate(){
+      var ok = true;
+      var reqs = form.querySelectorAll('[required]');
+      for(var i=0;i<reqs.length;i++){ if(!filled(reqs[i])){ ok = false; break; } }
+      if(ok){
+        var tipo = document.getElementById('DOC_TIPO');
+        if(tipo && tipo.value){
+          if(!filled(document.getElementById('DOC_FRENTE'))) ok = false;
+          if(!filled(document.getElementById('DOC_VERSO'))) ok = false;
+        }
+      }
+      if(ok){
+        var s = document.getElementById('SENHA');
+        var cs = document.getElementById('CONFIRMA_SENHA');
+        if(s && cs && s.value !== cs.value) ok = false;
+      }
+      btn.disabled = !ok;
+      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+      btn.style.opacity = ok ? '1' : '0.6';
+    }
+    form.addEventListener('input', validate);
+    form.addEventListener('change', validate);
+    validate();
+  }
+  function init(){ bind('DOC_FRENTE'); bind('DOC_VERSO'); setupValidation(); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
