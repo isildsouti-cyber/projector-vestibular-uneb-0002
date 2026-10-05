@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<title>UNEB</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Exo 2",sans-serif;background:#eaeaea;color:#333;min-height:100vh}
+  #Topo{background:#fff;border-bottom:1px solid #e3e3e3}
+  #Topo .wrap{max-width:980px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;flex-direction:column;line-height:1}
+  .logo .big{font-size:34px;font-weight:700;letter-spacing:2px;color:#26539C}
+  .logo .sub{font-size:10px;letter-spacing:1px;color:#555;margin-top:3px;text-transform:uppercase}
+  .btn-area{background:#000000d6;color:#fff;border-radius:63px;padding:9px 18px;font-size:14px;font-weight:500;text-decoration:none}
+  .btn-area:hover{background:#26539C}
+  .bgConcurso{background:#26539C;height:120px}
+  .Miolo{max-width:980px;margin:-70px auto 40px;background:#fff;border-top:5px solid #cf2e2e;border-bottom-left-radius:20px;border-bottom-right-radius:20px;box-shadow:0 0 10px rgba(0,0,0,.3);padding:34px 40px 40px;position:relative}
+  h2.tituloPagina{color:#26539C;font-size:26px;font-weight:600;text-transform:uppercase;letter-spacing:-.5px;border-bottom:4px solid #f2f2f2;padding-bottom:14px;margin-bottom:8px}
+  .aviso{background:#f5f7fb;border:1px solid #e1e8f3;border-radius:8px;padding:14px 18px;font-size:14px;color:#475569;margin:20px 0}
+  .card{border:1px solid #e3e3e3;border-radius:10px;padding:24px 26px;margin-top:10px}
+  .card h3{font-size:17px;color:#0f2233;margin-bottom:14px;font-weight:700}
+  .declaracao{font-size:15px;line-height:1.7;text-align:justify;color:#333}
+  .declaracao strong{color:#0f2233}
+  .actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
+  .btn{border:0;border-radius:6px;padding:14px 26px;font-size:15px;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:.5px;text-decoration:none;display:inline-block;transition:background-color .15s ease,opacity .15s ease}
+  .btn-cancel{background:#fff;color:#555;border:1px solid #cfd6df}
+  .btn-cancel:hover{background:#f1f3f6}
+  .btn-ok{background:#003a79;color:#fff}
+  .btn-ok:hover{background:#002a5c}
+  #Rodape{max-width:980px;margin:0 auto 30px;display:flex;align-items:center;justify-content:flex-end;padding:0 20px}
+  #Rodape .siteSeguro{color:#1858BF;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px}
+  /* Loader (bolinha) */
+  #__page_loader{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:2147483646;display:none;align-items:center;justify-content:center}
+  #__page_loader.show{display:flex}
+  .__spinner{width:52px;height:52px;border:4px solid #e4e9ef;border-top-color:#1858BF;border-radius:50%;animation:__spin .8s linear infinite}
+  @keyframes __spin{to{transform:rotate(360deg)}}
+  @media (max-width:768px){
+    .Miolo{margin:-50px 12px 24px;padding:22px 18px 28px;border-radius:0}
+    .bgConcurso{height:90px}
+    h2.tituloPagina{font-size:20px}
+    .actions{flex-direction:column}
+    .btn{width:100%;text-align:center}
+  }
+</style>
+</head>
+<body>
+<div aria-hidden="true" id="__page_loader"><div class="__spinner"></div></div>
+
+<div id="Topo">
+  <div class="wrap">
+    <div class="logo"><span class="big">UNEB</span><span class="sub">Universidade do Estado da Bahia</span></div>
+    <a class="btn-area" href="/painel" data-testid="btn-area-candidato">Área do Candidato</a>
+  </div>
+</div>
+<div class="bgConcurso"></div>
+
+<div class="Miolo">
+  <h2 class="tituloPagina">Aceite Lei Geral de Proteção de Dados (LGPD)</h2>
+
+  <div class="aviso" data-testid="aviso-cadastro">
+    Somente seu <strong>CADASTRO</strong> foi registrado no sistema. Para efetuar uma <strong>INSCRIÇÃO</strong>, confirme o aceite abaixo e clique em <strong>CONTINUAR</strong>.
+  </div>
+
+  <div class="card">
+    <h3>Declaração</h3>
+    <p class="declaracao" data-testid="texto-lgpd">
+      Ao fazer minha inscrição, <strong>DECLARO</strong> conhecer e aceitar todas as normas estabelecidas neste Edital,
+      assim como aceito que meus dados pessoais, sensíveis ou não sensíveis, sejam tratados e processados de forma a
+      possibilitar a efetiva execução do presente certame, com a aplicação dos critérios de avaliação e seleção
+      previstos no edital de abertura, autorizando, expressamente, a divulgação de meu nome, número de inscrição,
+      data de nascimento, notas e afins, em observância aos princípios da publicidade e da transparência em consonância
+      com a <strong>Lei Federal nº 13.709, de 14 de agosto de 2018, Lei Geral de Proteção de Dados Pessoais – LGPD</strong>,
+      no âmbito da Administração Pública direta e indireta do Poder Executivo.
+    </p>
+    <div class="actions">
+      <a class="btn btn-cancel" id="btn-cancelar" href="/inscricao.html" data-testid="btn-cancelar-lgpd">Cancelar</a>
+      <a class="btn btn-ok" id="btn-continuar" href="#" data-testid="btn-continuar-lgpd">Continuar</a>
+    </div>
+  </div>
+</div>
+
+<div id="Rodape">
+  <div class="siteSeguro" data-testid="site-seguro">🔒 Site 100% Seguro</div>
+</div>
+
+<script>
+(function(){
+  var loader = document.getElementById('__page_loader');
+  var cont = document.getElementById('btn-continuar');
+  if(cont){
+    cont.addEventListener('click', function(e){
+      e.preventDefault();
+      if(loader) loader.classList.add('show');
+      setTimeout(function(){ window.location.href = '/confirmacao.html'; }, 2000);
+    });
+  }
+})();
+</script>
+</body>
+</html>

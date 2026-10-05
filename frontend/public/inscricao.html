@@ -904,12 +904,6 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
 <span data-testid="senha-error" id="SENHA_ERR" style="color:#c62828;font-weight:bold;display:none;margin-top:6px;">As senhas não coincidem</span>
 </div>
 </fieldset>
-<fieldset>
-<label class="description decl-veracidade">
-<input id="declaracao_veracidade" name="declaracao_veracidade" required="" type="checkbox"/>
-Estou ciente de que prestar informações falsas acarreta minha eliminação do certame e configura crime de falsidade ideológica (art. 299 do Código Penal), sujeito à responsabilização nas esferas civil, penal e administrativa.
-</label>
-</fieldset>
 <input class="button" data-testid="btn-continuar-inscricao" disabled id="btn-salvar" name="salvar" style="opacity:0.6;cursor:not-allowed;" type="submit" value="Continuar"/>
 </form></div></div>
 </div>
@@ -1141,6 +1135,25 @@ Estou ciente de que prestar informações falsas acarreta minha eliminação do 
         else { inp.type='password'; if(open)open.style.display='block'; if(slash)slash.style.display='none'; }
       });
     });
+    // Continuar: salva dados, mostra carregamento (2s) e vai para o aceite da LGPD
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var salvar = document.getElementById('btn-salvar');
+      if(salvar && salvar.disabled) return;
+      try{
+        var prev = JSON.parse(sessionStorage.getItem('inscricao_dados')||'{}');
+        form.querySelectorAll('input,select,textarea').forEach(function(el){
+          if(!el.name || el.type==='file' || el.type==='submit' || el.type==='button') return;
+          if(el.type==='checkbox'){ prev[el.name] = el.checked; return; }
+          prev[el.name] = el.value;
+        });
+        sessionStorage.setItem('inscricao_dados', JSON.stringify(prev));
+      }catch(err){}
+      var loader = document.getElementById('__page_loader');
+      if(loader) loader.classList.remove('__hidden');
+      setTimeout(function(){ window.location.href = '/termos-lgpd.html'; }, 2000);
+    });
+
     validateForm();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
